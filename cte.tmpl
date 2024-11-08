@@ -1,0 +1,35 @@
+{{/* gotype: entgo.io/ent/entc/gen.Type */}}
+
+{{ define "dialect/sql/query/additional/query_cte" }}
+
+{{ $builder := $.QueryName }}
+{{ $receiver := receiver $builder }}
+
+{{ range $e := $.Edges }}
+	{{ $edge_builder := print $e.Type.QueryName }}
+	// Query{{ pascal $e.Name }}Recursive chains the current query on the "{{ $e.Name }}" edge, recursively using CTE.
+	func ({{ $receiver }} *{{ $builder }}) Query{{ pascal $e.Name }}Recursive(parentId {{ $e.Type.ID.Type }}) *{{ $edge_builder }} {
+	{{ $receiver }}.Where(
+		func(stmt *sql.Selector) {
+			child := sql.Table({{ $.Package }}.Table)
+			parent := sql.Table({{ $.Package }}.Table)
+			view := fmt.Sprintf("cte_%d", rand.UintN(100000))
+			keys := []string{ {{ $e.Type.Package }}.{{ $e.Type.ID.Constant }}, {{ $e.Type.Package }}.{{ $e.ColumnConstant }} }
+			cte := sql.WithRecursive(view, keys...)
+			pid := cte.C({{ $e.Type.Package }}.{{ $e.Type.ID.Constant }})
+			cte.As(
+				sql.Select(parent.Columns(keys...)...).From(child).
+					Where(sql.EQ(parent.C({{ $e.Type.Package }}.{{ $e.ColumnConstant }}), parentId)).
+					UnionAll(
+					sql.Select(child.Columns(keys...)...).From(child).
+						Join(cte).On(child.C({{ $e.Type.Package }}.{{ $e.ColumnConstant }}), pid),
+				),
+			)
+			stmt.Prefix(cte).Join(cte).On(stmt.C({{ $e.Type.Package }}.{{ $e.Type.ID.Constant }}), pid)
+		},
+	)
+	return {{ $receiver }}
+	}
+{{ end }}
+
+{{ end }}
