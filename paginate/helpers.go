@@ -186,7 +186,7 @@ func PageQueryParams(page int, perPage int) map[string]string {
 // FixParamNames fixes the parameter names to be `per_page` and `page`, to be
 // used with oapi-codegen.
 func FixParamNames(params []*ogen.Parameter) {
-	FixParamNamesWith(params, "itemsPerPage", "page")
+	FixParamNamesWith(params, "page", "itemsPerPage")
 }
 
 // FixParamNamesWith fixes the parameter names to be `per_page` and `page`, to
