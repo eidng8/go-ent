@@ -23,7 +23,7 @@ func (*Extension) Templates() []*gen.Template {
 }
 
 // AttachTo adds the `recurse` parameter to the path item.
-func AttachTo(item *ogen.PathItem) {
+func AttachTo(item *ogen.Operation) {
 	item.AddParameters(RecurseParam())
 }
 
