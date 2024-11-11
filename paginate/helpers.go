@@ -203,3 +203,127 @@ func FixParamNamesWith(
 		}
 	}
 }
+
+// SetResponse changes the response of given OpenAPI operation to meet the
+// paginate response.
+func SetResponse(op *ogen.Operation, description string, itemRef string) {
+	op.Responses["200"] = &ogen.Response{
+		Description: description,
+		Content: map[string]ogen.Media{
+			"application/json": {
+				Schema: &ogen.Schema{
+					Type: "object",
+					Properties: []ogen.Property{
+						{
+							Name: "current_page",
+							Schema: &ogen.Schema{
+								Type:        "integer",
+								Description: "Page number (1-based)",
+								Minimum:     ogen.Num("1"),
+							},
+						},
+						{
+							Name: "total",
+							Schema: &ogen.Schema{
+								Type:        "integer",
+								Description: "Total number of items",
+								Minimum:     ogen.Num("0"),
+							},
+						},
+						{
+							Name: "per_page",
+							Schema: &ogen.Schema{
+								Type:        "integer",
+								Description: "Number of items per page",
+								Minimum:     ogen.Num("1"),
+							},
+						},
+						{
+							Name: "last_page",
+							Schema: &ogen.Schema{
+								Type:        "integer",
+								Description: "Last page number",
+								Minimum:     ogen.Num("1"),
+							},
+						},
+						{
+							Name: "from",
+							Schema: &ogen.Schema{
+								Type:        "integer",
+								Description: "Index (1-based) of the first item in the current page",
+								Minimum:     ogen.Num("0"),
+							},
+						},
+						{
+							Name: "to",
+							Schema: &ogen.Schema{
+								Type:        "integer",
+								Description: "Index (1-based) of the last item in the current page",
+								Minimum:     ogen.Num("0"),
+							},
+						},
+						{
+							Name: "first_page_url",
+							Schema: &ogen.Schema{
+								Type:        "string",
+								Description: "URL to the first page",
+							},
+						},
+						{
+							Name: "last_page_url",
+							Schema: &ogen.Schema{
+								Type:        "string",
+								Description: "URL to the last page",
+							},
+						},
+						{
+							Name: "next_page_url",
+							Schema: &ogen.Schema{
+								Type:        "string",
+								Description: "URL to the next page",
+							},
+						},
+						{
+							Name: "prev_page_url",
+							Schema: &ogen.Schema{
+								Type:        "string",
+								Description: "URL to the previous page",
+							},
+						},
+						{
+							Name: "path",
+							Schema: &ogen.Schema{
+								Type:        "string",
+								Description: "Base path of the request",
+							},
+						},
+						{
+							Name: "data",
+							Schema: &ogen.Schema{
+								Type:        "array",
+								Description: "List of items",
+								Items: &ogen.Items{
+									Item: &ogen.Schema{Ref: itemRef},
+								},
+							},
+						},
+					},
+					Required: []string{
+						"current_page",
+						"total",
+						"per_page",
+						"last_page",
+						"from",
+						"to",
+						"first_page_url",
+						"last_page_url",
+						"next_page_url",
+						"prev_page_url",
+						"path",
+						"data",
+					},
+				},
+			},
+		},
+	}
+}
