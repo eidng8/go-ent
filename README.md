@@ -4,7 +4,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/eidng8/go-ent)](https://goreportcard.com/report/github.com/eidng8/go-ent)
 [![License](https://img.shields.io/github/license/eidng8/go-ent)](https://github.com/eidng8/go-ent?tab=MIT-1-ov-file#)
 
-A collection of extensions to be used with [ent ORM](https://entgo.io).
+A collection of extensions and mixins to be used with [ent ORM](https://entgo.io), [entoas](https://pkg.go.dev/entgo.io/contrib/entoas)
+and [oapi-codegen](https://pkg.go.dev/github.com/oapi-codegen/oapi-codegen/v2).
 
 ## Pagination
 
