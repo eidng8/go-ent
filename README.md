@@ -1,99 +1,141 @@
-# go-db
+# go-ent
 
-A tiny module for lazy me, to connect database.
+[![Go Reference](https://pkg.go.dev/badge/github.com/eidng8/go-ent.svg)](https://pkg.go.dev/github.com/eidng8/go-ent)
+[![Go Report Card](https://goreportcard.com/badge/github.com/eidng8/go-ent)](https://goreportcard.com/report/github.com/eidng8/go-ent)
+[![License](https://img.shields.io/github/license/eidng8/go-ent)](https://github.com/eidng8/go-ent?tab=MIT-1-ov-file#)
 
-This module use a predefined set of environment variables to connect databases using `database/sql`.
+A collection of extensions to be used with [ent ORM](https://entgo.io).
 
-##  Usage
+## Pagination
 
-Just call `Connect()` or `ConnectX()` to establish database connections.
+A simple pagination module to use with Ent.
+
+### Usage
 
 ```golang
-import (
-    "database/sql"
-    "os"
-    "github.com/eidng8/go-db"
+package main
 
-    "<your-package>/ent"
+import (
+	"context"
+
+	"github.com/eidng8/go-ent/paginate"
+	"github.com/gin-gonic/gin"
+
+	"your_project/ent"
+	"your_project/ent/your_model"
 )
 
-func getEntClient() *ent.Client {
-    return ent.NewClient(ent.Driver(entsql.OpenDB(db.ConnectX())))
+func getPage(ctx context.Context, query *ent.your_query) (*paginate.PaginatedList[ent.your_model], error) { 
+    // get the gin context to be used for the pagination
+    gc := ctx.(*gin.Context)
+    // creates a context to be used for ent query execution, 
+    // e.g. if soft delete from the official site is used
+    qc := SkipSoftDelete(context.Background())
+    pageParams := paginate.GetPaginationParams(gc)
+    // MUST be explicitly sorted, doesn't need this line if the query is already sorted
+    query.Order(your_model.ByID())
+    // optionally, add more predicates if needed
+    query.Where(predicate1, predicate2, ...)
+    // call `paginate.GetPage()` function to get the paginated result
+    page, err := paginate.GetPage[ent.your_model](gc, qc, query, pageParams)
+    if err != nil {
+        return nil, err
+    }
+    return page, nil
 }
 ```
 
-### Environment Variables
 
-#### DB_DRIVER
+## Simple tree
 
-REQUIRED and cannot be empty. Determines what kind of database to connect. Can be any driver supported by `database/sql`, such as `mysql`, `sqlite3`, `pgx`, etc. Remember to import proper driver module to your package.
+A simple tree module to use with Ent, with predefined column name and CTE (common table expressions).
 
-#### DB_DSN
-
-REQUIRED for connections other than MySQL. A complete DSN string to be used to establish connection to database. When set, this variable is passed directly to `sql.Open()`. For MySQL, if this variable is not set, variables below will be used to configure the connection.
-
-#### Variables specific to MySQL
-
-These variables are used to configure the connection to MySQL, if `DB_DSN` is not set.
-
-##### DB_USER
-
-REQUIRED and cannot be empty. Determines the user name to connect to database.
-
-##### DB_PASSWORD
-
-REQUIRED and cannot be empty. Determines the password to connect to database.
-
-##### DB_HOST
-
-REQUIRED and cannot be empty. Determines the host to connect to.
-
-##### DB_NAME
-
-REQUIRED and cannot be empty. Determines the database name to connect to.
-
-##### DB_PROTOCOL
-
-OPTIONAL and defaults to `tcp`.
-
-##### DB_COLLATION
-
-OPTIONAL and defaults to `utf8mb4_unicode_ci`.
-
-##### DB_TIMEZONE
-
-OPTIONAL and defaults to `UTC`.
-
-##### more configurations
-
-When using `Connect()` or `ConnectX()` with environment variables, some configurations are also set:
+### Usage
 
 ```golang
-mysql.Config{
-    // .....
-    AllowCleartextPasswords:  false,
-    AllowFallbackToPlaintext: false,
-    AllowNativePasswords:     true,
-    AllowOldPasswords:        false,
-    MultiStatements:          true,
-    ParseTime:                true,
-    // .....
+// ent/schema/aschema.go
+package schema
+
+import (
+    "entgo.io/ent"
+    "entgo.io/ent/schema/field"
+    "github.com/eidng8/go-ent/simpletree"
+)
+
+type ASchema struct {
+    ent.Schema
+}
+
+func (ASchema) Fields() []ent.Field {
+	return []ent.Field{
+        // Primary key must be `id`
+        field.Uint32("id").Unique().Immutable(),
+    }
+}
+
+func (ASchema) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+        // Comment out this when running `go generate` for the first time
+        // Choose different ParentXXXMixin[T]{} according to the type of the primary key
+        simpletree.ParentU32Mixin[ASchema]{},
+    }
 }
 ```
 
-Besides using `Connect()` or `ConnectX()`, `ConnectMysql()` can also be called with `mysql.Config` pointer:
+
+## Soft delete
+
+A simple soft delete module to use with Ent.
+
+### Usage
 
 ```golang
-cfg := mysql.Config{
-    // You detailed configuration .....
+// ent/schema/aschema.go
+package schema
+
+import (
+	"entgo.io/contrib/entoas"
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+	"github.com/ogen-go/ogen"
+
+	"github.com/eidng8/go-ent/softdelete"
+	
+	gen "<project>/ent"
+	"<project>/ent/intercept"
+)
+
+type ASchema struct {
+	ent.Schema
 }
-ConnectMysql(cfg)
-```
 
-No matter which function is used to establish the connection, the following 3 settings are also called:
+func (ASchema) Fields() []ent.Field {
+	return []ent.Field{
+		// fields
+	}
+}
 
-```golang
-db.SetMaxIdleConns(10)
-db.SetMaxOpenConns(100)
-db.SetConnMaxLifetime(time.Hour)
+func (ASchema) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		// Comment out this when running `go generate` for the first time
+		softdelete.Mixin{},
+	}
+}
+
+func (ASchema) Interceptors() []ent.Interceptor {
+	return []ent.Interceptor{
+		// Comment out this when running `go generate` for the first time
+		softdelete.Interceptor(intercept.NewQuery),
+	}
+}
+
+func (ASchema) Hooks() []ent.Hook {
+	return []ent.Hook{
+		// Comment out this when running `go generate` for the first time
+		softdelete.Mutator[*gen.Client](),
+	}
+}
 ```
