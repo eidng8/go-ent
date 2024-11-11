@@ -11,6 +11,7 @@ import (
 //go:embed *.tmpl
 var dir embed.FS
 
+// Extension for simple-tree.
 type Extension struct {
 	entc.DefaultExtension
 }
@@ -21,6 +22,12 @@ func (*Extension) Templates() []*gen.Template {
 	}
 }
 
+// AttachTo adds the `recurse` parameter to the path item.
+func AttachTo(item *ogen.PathItem) {
+	item.AddParameters(RecurseParam())
+}
+
+// RemoveFields removes the specified fields from the properties.
 func RemoveFields(props []ogen.Property, fields ...string) []ogen.Property {
 	for _, field := range fields {
 		for i, prop := range props {
@@ -33,7 +40,20 @@ func RemoveFields(props []ogen.Property, fields ...string) []ogen.Property {
 	return props
 }
 
+// RemoveEdges removes the `parent` and `children` fields from the OpenAPI
+// schema.
 func RemoveEdges(op *ogen.Operation) {
 	schema := op.RequestBody.Content["application/json"].Schema
 	schema.Properties = RemoveFields(schema.Properties, "parent", "children")
+}
+
+// RecurseParam returns the `recurse` parameter.
+func RecurseParam() *ogen.Parameter {
+	return &ogen.Parameter{
+		Name:        "recurse",
+		In:          "query",
+		Description: "Whether to return all descendants (recurse to last leaf)",
+		Required:    false,
+		Schema:      &ogen.Schema{Type: "boolean"},
+	}
 }
