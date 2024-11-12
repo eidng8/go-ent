@@ -2,9 +2,11 @@ package softdelete
 
 import (
 	"context"
+	"fmt"
 	"path"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-faster/errors"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/ogen-go/ogen"
 )
 
@@ -12,38 +14,26 @@ import (
 const ParamTrashed = "trashed"
 
 // AttachTo adds fields, parameters, and endpoints necessary to the soft delete
-// pattern to the given OpenAPI `spec` `base`, with the default ID parameter
-// name of `{id}`. The `itemSchema` is the name of the schema to attach the
-// `deleted_at` field to.
-func AttachTo(spec *ogen.Spec, base string, itemSchema string) {
-	AttachAs(spec, base, itemSchema, "{id}")
-}
-
-// AttachAs adds fields, parameters, and endpoints necessary to the soft delete
 // pattern to the given OpenAPI spec, with the given ID parameter name.
-func AttachAs(spec *ogen.Spec, base string, itemSchema string, idParam string) {
-	AddDeletedAtField(spec.Components.Schemas[itemSchema])
-	ep, ok := spec.Paths[base]
-	if ok {
+func AttachTo(
+	spec *ogen.Spec, base string, item *ogen.Schema, idParam *ogen.Parameter,
+) error {
+	AddDeletedAtField(item)
+	ep, exists := spec.Paths[base]
+	if exists {
 		ep.Get.AddParameters(TrashedParam())
 	}
-	p := path.Join(base, idParam)
-	ep, ok = spec.Paths[p]
-	if ok {
+	p := path.Join(base, fmt.Sprintf("{%s}", idParam.Name))
+	ep, exists = spec.Paths[p]
+	if exists {
 		ep.Get.AddParameters(TrashedParam())
 		ep.Delete.AddParameters(TrashedParam())
 	}
-	for _, i := range []string{"parent", "children"} {
-		pp := path.Join(p, i)
-		ep, ok = spec.Paths[pp]
-		if ok {
-			ep.Get.AddParameters(TrashedParam())
-		}
+	ep, exists = spec.Paths[path.Join(p, "restore")]
+	if !exists {
+		return AddRestoreEndpoint(spec, p, idParam)
 	}
-	ep, ok = spec.Paths[path.Join(p, "restore")]
-	if !ok {
-		AddRestoreEndpoint(spec, p)
-	}
+	return nil
 }
 
 // IncludeTrashed returns a new context that skips the soft-delete interceptor/mutators.
@@ -69,7 +59,8 @@ func NewSoftDeleteQueryContext(
 // AddDeletedAtField adds the "deleted_at" field to the oas schema
 func AddDeletedAtField(schema *ogen.Schema) {
 	schema.Properties = append(
-		schema.Properties, ogen.Property{
+		schema.Properties,
+		ogen.Property{
 			Name: FieldDeletedAt,
 			Schema: &ogen.Schema{
 				Type:        "string",
@@ -82,17 +73,23 @@ func AddDeletedAtField(schema *ogen.Schema) {
 }
 
 // AddRestoreEndpoint adds the restore endpoint to the OpenAPI spec
-func AddRestoreEndpoint(spec *ogen.Spec, basePath string) {
+func AddRestoreEndpoint(
+	spec *ogen.Spec, basePath string, idParam *ogen.Parameter,
+) error {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	marshal, err := json.Marshal(idParam)
+	if err != nil {
+		return errors.Errorf("failed to marshal idParam: %v", err)
+	}
+	var param ogen.Parameter
+	err = json.Unmarshal(marshal, &param)
+	if err != nil {
+		return errors.Errorf("failed to unmarshal idParam: %v", err)
+	}
 	endpoint := path.Join(basePath, "restore")
 	spec.Paths[endpoint] = &ogen.PathItem{
 		Post: &ogen.Operation{
-			Parameters: []*ogen.Parameter{
-				&ogen.Parameter{
-					Name:     "id",
-					In:       openapi3.ParameterInPath,
-					Required: true,
-				},
-			},
+			Parameters: []*ogen.Parameter{&param},
 			Responses: map[string]*ogen.Response{
 				"204": {Description: "Record with requested ID was restored"},
 				"400": {Ref: "#/components/responses/400"},
@@ -102,6 +99,7 @@ func AddRestoreEndpoint(spec *ogen.Spec, basePath string) {
 			},
 		},
 	}
+	return nil
 }
 
 // TrashedParam returns the `trashed` query parameter
