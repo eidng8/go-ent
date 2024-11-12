@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/ogen-go/ogen"
 )
 
 const columnName = "parent_id"
@@ -18,7 +19,18 @@ type ParentU8Mixin[T ent.Interface] struct {
 
 func (ParentU8Mixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint8(columnName).Optional().Nillable(),
+		field.Uint8(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "integer",
+					Format:      "uint8",
+					Minimum:     ogen.Num("1"),
+					Maximum:     ogen.Num("255"),
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -33,7 +45,18 @@ type ParentU16Mixin[T ent.Interface] struct {
 
 func (ParentU16Mixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint16(columnName).Optional().Nillable(),
+		field.Uint16(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "integer",
+					Format:      "uint16",
+					Minimum:     ogen.Num("1"),
+					Maximum:     ogen.Num("65535"),
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -48,7 +71,18 @@ type ParentU32Mixin[T ent.Interface] struct {
 
 func (ParentU32Mixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint32(columnName).Optional().Nillable(),
+		field.Uint32(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "integer",
+					Format:      "uint32",
+					Minimum:     ogen.Num("1"),
+					Maximum:     ogen.Num("4294967295"),
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -63,7 +97,18 @@ type ParentU64Mixin[T ent.Interface] struct {
 
 func (ParentU64Mixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint64(columnName).Optional().Nillable(),
+		field.Uint64(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "integer",
+					Format:      "uint64",
+					Minimum:     ogen.Num("1"),
+					Maximum:     ogen.Num("18446744073709551615"),
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -78,7 +123,18 @@ type ParentI8Mixin[T ent.Interface] struct {
 
 func (ParentI8Mixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int8(columnName).Optional().Nillable(),
+		field.Int8(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "integer",
+					Format:      "int8",
+					Minimum:     ogen.Num("1"),
+					Maximum:     ogen.Num("127"),
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -93,7 +149,18 @@ type ParentI16Mixin[T ent.Interface] struct {
 
 func (ParentI16Mixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int16(columnName).Optional().Nillable(),
+		field.Int16(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "integer",
+					Format:      "int16",
+					Minimum:     ogen.Num("1"),
+					Maximum:     ogen.Num("32767"),
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -108,7 +175,18 @@ type ParentI32Mixin[T ent.Interface] struct {
 
 func (ParentI32Mixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int32(columnName).Optional().Nillable(),
+		field.Int32(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "integer",
+					Format:      "int32",
+					Minimum:     ogen.Num("1"),
+					Maximum:     ogen.Num("2147483647"),
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -123,7 +201,18 @@ type ParentI64Mixin[T ent.Interface] struct {
 
 func (ParentI64Mixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int64(columnName).Optional().Nillable(),
+		field.Int64(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "integer",
+					Format:      "int64",
+					Minimum:     ogen.Num("1"),
+					Maximum:     ogen.Num("9223372036854775807"),
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -137,8 +226,18 @@ type ParentStringMixin[T ent.Interface] struct {
 }
 
 func (ParentStringMixin[T]) Fields() []ent.Field {
+	u1 := uint64(1)
 	return []ent.Field{
-		field.String(columnName).Optional().Nillable(),
+		field.String(columnName).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "string",
+					MinLength:   &u1,
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
@@ -153,7 +252,16 @@ type ParentUuidMixin[T ent.Interface] struct {
 
 func (ParentUuidMixin[T]) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID(columnName, uuid.New()).Optional().Nillable(),
+		field.UUID(columnName, uuid.New()).Optional().Nillable().Annotations(
+			// adds constraints to the generated OpenAPI specification
+			entoas.Schema(
+				&ogen.Schema{
+					Type:        "string",
+					Format:      "uuid",
+					Description: "Parent record ID",
+				},
+			),
+		),
 	}
 }
 
