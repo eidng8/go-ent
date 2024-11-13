@@ -7,7 +7,9 @@ require (
 	entgo.io/ent v0.14.1
 	github.com/eidng8/go-url v0.0.1
 	github.com/gin-gonic/gin v1.10.0
+	github.com/go-faster/errors v0.7.1
 	github.com/google/uuid v1.6.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/json-iterator/go v1.1.12
 	github.com/ogen-go/ogen v1.6.0
 )
@@ -26,7 +28,6 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/go-faster/jx v1.1.0 // indirect
 	github.com/go-faster/yaml v0.4.6 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
