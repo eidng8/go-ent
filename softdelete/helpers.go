@@ -89,7 +89,10 @@ func AddRestoreEndpoint(
 	endpoint := path.Join(basePath, "restore")
 	spec.Paths[endpoint] = &ogen.PathItem{
 		Post: &ogen.Operation{
-			Parameters: []*ogen.Parameter{&param},
+			Summary:     "Restore a trashed record",
+			Description: "Restore a record that was previously soft deleted",
+			OperationID: "RestoreSimpleTree",
+			Parameters:  []*ogen.Parameter{&param},
 			Responses: map[string]*ogen.Response{
 				"204": {Description: "Record with requested ID was restored"},
 				"400": {Ref: "#/components/responses/400"},
