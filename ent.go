@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
+// Timestamps returns definitions of created_at and updated_at fields.
 func Timestamps() []ent.Field {
 	return []ent.Field{
 		field.Time("created_at").Optional().Nillable().Default(time.Now).
