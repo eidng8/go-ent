@@ -12,6 +12,19 @@ import (
 	"github.com/ogen-go/ogen"
 )
 
+func AttachTo(op *ogen.Operation, description string, itemRef string) {
+	FixParamNames(op.Parameters)
+	SetResponse(op, description, itemRef)
+}
+
+func AttachAs(
+	op *ogen.Operation, description string, itemRef string, pageParam string,
+	perPageParam string,
+) {
+	FixParamNamesWith(op.Parameters, pageParam, perPageParam)
+	SetResponse(op, "Paginated list of items", itemRef)
+}
+
 // GetPaginationParams returns the PaginatedParams from the gin.Context,
 // with default values of page `1` and `10` items per page.
 func GetPaginationParams(gc *gin.Context) PaginatedParams {
