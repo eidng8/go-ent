@@ -271,12 +271,12 @@ func (ParentUuidMixin[T]) Edges() []ent.Edge {
 
 func getEdges[T ent.Interface]() []ent.Edge {
 	return []ent.Edge{
-		edge.To("parent", T.Type).
+		edge.To("children", T.Type).
 			Annotations(
 				entsql.OnDelete(entsql.Restrict),
 				entoas.ReadOnly(true),
 				entoas.Skip(true),
 			).
-			From("children").Field("parent_id").Unique(),
+			From("parent").Field("parent_id").Unique(),
 	}
 }
