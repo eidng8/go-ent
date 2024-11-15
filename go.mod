@@ -5,7 +5,7 @@ go 1.23.2
 require (
 	entgo.io/contrib v0.6.0
 	entgo.io/ent v0.14.1
-	github.com/eidng8/go-url v0.0.1
+	github.com/eidng8/go-url v0.0.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-faster/errors v0.7.1
 	github.com/google/uuid v1.6.0
