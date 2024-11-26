@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path"
 
-	"entgo.io/ent/entc/gen"
 	"github.com/go-faster/errors"
 	"github.com/iancoleman/strcase"
 	jsoniter "github.com/json-iterator/go"
@@ -18,7 +17,7 @@ const ParamTrashed = "trashed"
 // AttachTo adds fields, parameters, and endpoints necessary to the soft delete
 // pattern to the given OpenAPI spec, with the given ID parameter name.
 func AttachTo(
-	node *gen.Type, spec *ogen.Spec, base string, item *ogen.Schema,
+	name string, spec *ogen.Spec, base string, item *ogen.Schema,
 	idParam *ogen.Parameter,
 ) error {
 	AddDeletedAtField(item)
@@ -34,7 +33,7 @@ func AttachTo(
 	}
 	ep, exists = spec.Paths[path.Join(p, "restore")]
 	if !exists {
-		return AddRestoreEndpoint(node, spec, p, idParam)
+		return AddRestoreEndpoint(name, spec, p, idParam)
 	}
 	return nil
 }
@@ -77,7 +76,7 @@ func AddDeletedAtField(schema *ogen.Schema) {
 
 // AddRestoreEndpoint adds the restore endpoint to the OpenAPI spec
 func AddRestoreEndpoint(
-	node *gen.Type, spec *ogen.Spec, basePath string, idParam *ogen.Parameter,
+	name string, spec *ogen.Spec, basePath string, idParam *ogen.Parameter,
 ) error {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	marshal, err := json.Marshal(idParam)
@@ -94,7 +93,7 @@ func AddRestoreEndpoint(
 		Post: &ogen.Operation{
 			Summary:     "Restore a trashed record",
 			Description: "Restore a record that was previously soft deleted",
-			OperationID: "Restore" + strcase.ToCamel(node.Name),
+			OperationID: "restore" + strcase.ToCamel(name),
 			Parameters:  []*ogen.Parameter{&param},
 			Responses: map[string]*ogen.Response{
 				"204": {Description: "Record with requested ID was restored"},
