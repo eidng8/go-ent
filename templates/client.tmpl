@@ -1,0 +1,29 @@
+{{ define "dialect/sql/txoptions" }}
+
+// Transaction wraps the given function in a transaction.
+// Commit is called if the function returns no error, or rollbacks the
+// transaction if an error is returned.
+func (c *Client) Transaction(
+	ctx context.Context, cb func(context.Context, *Tx) (interface{}, error),
+) (interface{}, error) {
+	commited := false
+	tx, err := c.Tx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if !commited {
+			_ = tx.Rollback()
+		}
+	}()
+	ret, err := cb(ctx, tx)
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	commited = true
+	return ret, nil
+}
+{{ end }}
