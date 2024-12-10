@@ -1,0 +1,61 @@
+{{ define "dialect/sql/errors" }}
+
+const (
+    NotConstraintError = iota
+    ConstraintUniqueError
+    ConstraintNullError
+    ConstraintForeignKeyError
+    ConstraintPrimaryKeyError
+    ConstraintCheckError
+    ConstraintDefaultError
+)
+
+func ConstraintErrorType(err error) int {
+    if IsConstraintError(err) {
+        var ec *ConstraintError
+        errors.As(err, &ec)
+        msg := strings.ToLower(ec.Error())
+        if utils.StringContainsAny(msg, []string{"unique", "duplicate"}) {
+            return ConstraintUniqueError
+        } else if utils.StringContainsAny(
+            msg, []string{"foreign", "child", "parent"},
+        ) {
+            return ConstraintForeignKeyError
+        } else if strings.Contains(msg, "null") {
+            return ConstraintNullError
+        } else if strings.Contains(msg, "check") {
+            return ConstraintCheckError
+        } else if strings.Contains(msg, "primary") {
+            // mostly won't be here, as the word "unique" is also in the message
+            return ConstraintPrimaryKeyError
+        }
+        return ConstraintDefaultError
+    }
+    return NotConstraintError
+}
+
+func IsPrimaryKeyError(err error) bool {
+    return ConstraintPrimaryKeyError == ConstraintErrorType(err)
+}
+
+func IsUniqueKeyError(err error) bool {
+    return ConstraintUniqueError == ConstraintErrorType(err)
+}
+
+func IsForeignKeyError(err error) bool {
+    return ConstraintForeignKeyError == ConstraintErrorType(err)
+}
+
+func IsNullCheckError(err error) bool {
+    return ConstraintNullError == ConstraintErrorType(err)
+}
+
+func IsCheckConstraintError(err error) bool {
+    return ConstraintCheckError == ConstraintErrorType(err)
+}
+
+func IsDefaultConstraintError(err error) bool {
+    return ConstraintDefaultError == ConstraintErrorType(err)
+}
+
+{{ end }}

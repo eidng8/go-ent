@@ -3,24 +3,11 @@ package simpletree
 import (
 	"embed"
 
-	"entgo.io/ent/entc"
-	"entgo.io/ent/entc/gen"
 	"github.com/ogen-go/ogen"
 )
 
 //go:embed *.tmpl
 var dir embed.FS
-
-// Extension for simple-tree.
-type Extension struct {
-	entc.DefaultExtension
-}
-
-func (*Extension) Templates() []*gen.Template {
-	return []*gen.Template{
-		gen.MustParse(gen.NewTemplate("query_cte").ParseFS(dir, "*.tmpl")),
-	}
-}
 
 // AttachTo adds the `recurse` parameter to the path item.
 func AttachTo(item *ogen.Operation) {
