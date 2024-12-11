@@ -1,0 +1,23 @@
+{{ define "model/additional/plucks" }}
+
+{{ $receiver := $.Receiver }}
+
+{{- if $.HasOneFieldID }}
+	{{ $p := receiver $.Receiver }}{{ if eq $p $receiver }} {{ $p = "value" }} {{ end }}
+	{{ $func := print "Pluck" $.Name "ID" }}
+	// {{ $func }} returns the "ID" field value.
+	func {{ $func }}({{ $receiver }} *{{ $.Name }}) {{ $.ID.Type }} {
+		return {{ $receiver }}.ID
+	}
+{{- end }}
+
+{{ range $f := $.Fields }}
+	{{ $p := receiver $f.Type.String }}{{ if eq $p $receiver }} {{ $p = "value" }} {{ end }}
+	{{ $func := print "Pluck" $.Name $f.StructField }}
+	// {{ $func }} returns the "{{ $f.Name }}" field value.
+	func {{ $func }}({{ $receiver }} *{{ $.Name }}) {{ if $f.Nillable }}*{{ end }}{{ $f.Type }} {
+		return {{ $receiver }}.{{ $f.StructField }}
+	}
+{{ end }}
+
+{{ end }}
