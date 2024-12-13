@@ -8,7 +8,7 @@ import (
 
 	"github.com/ogen-go/ogen"
 
-	eu "github.com/eidng8/go-url"
+	"github.com/eidng8/go-utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -372,7 +372,7 @@ func (p Paginator[V, Q]) setSchemeHost(url *url.URL) *url.URL {
 
 // UrlWithPage returns a URL with the page and per_page query parameters set.
 func (p Paginator[V, Q]) UrlWithPage(page int, perPage int) *url.URL {
-	u := eu.RequestUrlWithQueryParams(
+	u := utils.RequestUrlWithQueryParams(
 		p.GinCtx.Request, PageQueryParams(page, perPage),
 	)
 	return p.setSchemeHost(u)
@@ -381,7 +381,7 @@ func (p Paginator[V, Q]) UrlWithPage(page int, perPage int) *url.URL {
 // UrlWithoutPageParams returns a URL without the page and per_page query
 // parameters.
 func (p Paginator[V, Q]) UrlWithoutPageParams() *url.URL {
-	u := eu.RequestUrlWithoutQueryParams(
+	u := utils.RequestUrlWithoutQueryParams(
 		p.GinCtx.Request, ParamPage, ParamPerPage,
 	)
 	return p.setSchemeHost(u)
@@ -389,7 +389,7 @@ func (p Paginator[V, Q]) UrlWithoutPageParams() *url.URL {
 
 // UrlWithoutQuery returns a URL without query string.
 func (p Paginator[V, Q]) UrlWithoutQuery() *url.URL {
-	return p.setSchemeHost(eu.RequestBaseUrl(p.GinCtx.Request))
+	return p.setSchemeHost(utils.RequestBaseUrl(p.GinCtx.Request))
 }
 
 // PageQueryParams sets the page and per_page query parameters.
