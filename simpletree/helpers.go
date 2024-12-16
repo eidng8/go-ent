@@ -1,13 +1,8 @@
 package simpletree
 
 import (
-	"embed"
-
 	"github.com/ogen-go/ogen"
 )
-
-//go:embed *.tmpl
-var dir embed.FS
 
 // AttachTo adds the `recurse` parameter to the path item.
 func AttachTo(item *ogen.Operation) {
